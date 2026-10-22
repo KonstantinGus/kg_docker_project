@@ -1,0 +1,32 @@
+
+services:
+  nginx:
+    build: ./nginx
+    ports:
+      - "8080:80"
+    depends_on:
+      - python
+
+  python:
+    build: ./kg-app
+    expose:
+      - "5000"
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      DB_NAME: projectdb
+      DB_USER: projectuser
+      DB_PASSWORD: projectpass
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: projectdb
+      POSTGRES_USER: projectuser
+      POSTGRES_PASSWORD: projectpass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

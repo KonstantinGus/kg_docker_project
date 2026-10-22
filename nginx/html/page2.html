@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notes</title>
+</head>
+
+<body>
+    <h1>My Notes</h1>
+
+    <form id="noteForm">
+        <label for="note">Write a note:</label>
+        <input type="text" id="note" required>
+        <button type="submit">Save note</button>
+    </form>
+
+    <p id="status"></p>
+
+    <h2>Saved notes</h2>
+    <ul id="notes"></ul>
+
+    <p><a href="/">Back to Home</a></p>
+
+    <script>
+        async function loadNotes() {
+            const response = await fetch("/api/");
+            const data = await response.json();
+            const list = document.getElementById("notes");
+
+            list.replaceChildren();
+
+            data.messages.forEach(note => {
+                const item = document.createElement("li");
+                item.textContent = note.message;
+                list.appendChild(item);
+            });
+        }
+
+        document.getElementById("noteForm").addEventListener("submit",
+            async function (event) {
+                event.preventDefault();
+
+                const input = document.getElementById("note");
+                const status = document.getElementById("status");
+
+                try {
+                    const response = await fetch("/api/", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ message: input.value })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error("Could not save note");
+                    }
+
+                    input.value = "";
+                    status.textContent = "Note saved successfully.";
+                    await loadNotes();
+                } catch (error) {
+                    status.textContent = "Could not save note.";
+                }
+            });
+
+        loadNotes();
+    </script>
+</body>
+
+</html>
